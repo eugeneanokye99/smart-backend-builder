@@ -1,0 +1,240 @@
+Entity: Course
+Base URL: http://localhost:3000
+
+Endpoints:
+
+1. Create Course
+   - Method: POST
+   - Path: /api/courses
+   - Purpose: Create a new course in the system.
+   - Request Body:
+     - title (String, Required): Title of the course (max 150 chars).
+     - code (String, Required): Unique course code (uppercase, max 20 chars).
+     - description (String, Required): Detailed description (max 2000 chars).
+     - category (String, Required): Category of the course (max 100 chars).
+     - level (String, Optional): Level of the course. Enum: ["beginner", "intermediate", "advanced"]. Default: "beginner".
+     - credits (Number, Required): Credits awarded (0-10).
+     - durationWeeks (Number, Required): Duration in weeks (min 1).
+     - instructor (ObjectId, Required): Reference to the Teacher entity.
+     - students (Array, Optional): List of Student ObjectIds.
+     - capacity (Number, Required): Maximum capacity (min 1).
+     - enrolledCount (Number, Optional): Number of enrolled students. Default: 0.
+     - schedule (Object, Required): { startDate (Date), endDate (Date), daysOfWeek (Array), time (String) }.
+     - price (Number, Required): Course price (min 0).
+     - currency (String, Optional): Currency code. Enum: ["USD", "EUR", "GBP", "GHS"]. Default: "USD".
+     - status (String, Optional): Course status. Enum: ["draft", "published", "archived"]. Default: "draft".
+     - thumbnail (String, Optional): URL to thumbnail image.
+     - isActive (Boolean, Optional): Active status. Default: true.
+   - Example Payload:
+     {
+       "title": "Introduction to Programming",
+       "code": "CS101",
+       "description": "Learn the basics of programming.",
+       "category": "Computer Science",
+       "credits": 3,
+       "durationWeeks": 12,
+       "instructor": "60d5ecb8b487343510e8f25d",
+       "capacity": 30,
+       "schedule": {
+         "startDate": "2023-09-01",
+         "endDate": "2023-12-15",
+         "daysOfWeek": ["monday", "wednesday"],
+         "time": "10:00 AM - 11:30 AM"
+       },
+       "price": 100
+     }
+   - Status Codes:
+     - 201 Created: Course created successfully.
+     - 400 Bad Request: Validation error.
+
+2. Get All Courses
+   - Method: GET
+   - Path: /api/courses
+   - Purpose: Retrieve all courses. Populates instructor and students (partial fields).
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: List returned successfully.
+     - 500 Internal Server Error.
+
+3. Get Course by ID
+   - Method: GET
+   - Path: /api/courses/:id
+   - Purpose: Retrieve a specific course. Populates instructor and students.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Course found.
+     - 404 Not Found.
+     - 500 Internal Server Error.
+
+4. Update Course
+   - Method: PUT
+   - Path: /api/courses/:id
+   - Purpose: Update course details.
+   - Request Body: (Any defined field)
+   - Example Payload:
+     {
+       "title": "Intro to Python Programming",
+       "capacity": 35
+     }
+   - Status Codes:
+     - 200 OK: Updated successfully.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+5. Delete Course
+   - Method: DELETE
+   - Path: /api/courses/:id
+   - Purpose: Remove a course from the system.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Deleted successfully.
+     - 404 Not Found.
+     - 500 Internal Server Error.
+
+6. Update Course Status
+   - Method: PATCH
+   - Path: /api/courses/:id/status
+   - Purpose: Change the status of a course.
+   - Request Body:
+     - status (String, Required): Enum ["draft", "published", "archived"]
+   - Example Payload:
+     {
+       "status": "published"
+     }
+   - Status Codes:
+     - 200 OK: Status updated.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+7. Add Student to Course
+   - Method: POST
+   - Path: /api/courses/:id/students
+   - Purpose: Enroll a student in a course. Checks capacity and existing enrollment. Updates enrolledCount.
+   - Request Body:
+     - studentId (ObjectId, Required)
+   - Example Payload:
+     {
+       "studentId": "60d5ecb8b487343510e8f25e"
+     }
+   - Status Codes:
+     - 200 OK: Student added.
+     - 400 Bad Request: Full capacity or already enrolled.
+     - 404 Not Found.
+
+8. Remove Student from Course
+   - Method: DELETE
+   - Path: /api/courses/:id/students/:studentId
+   - Purpose: Remove a student from a course. Updates enrolledCount.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Student removed.
+     - 404 Not Found: Course or student not found.
+
+Full Schema Definition:
+{
+  "name": "Course",
+  "schema": {
+    "title": {
+      "type": "String",
+      "required": true,
+      "trim": true,
+      "maxlength": 150
+    },
+    "code": {
+      "type": "String",
+      "required": true,
+      "unique": true,
+      "trim": true,
+      "uppercase": true,
+      "maxlength": 20
+    },
+    "description": {
+      "type": "String",
+      "required": true,
+      "trim": true,
+      "maxlength": 2000
+    },
+    "category": {
+      "type": "String",
+      "required": true,
+      "trim": true,
+      "maxlength": 100
+    },
+    "level": {
+      "type": "String",
+      "enum": ["beginner", "intermediate", "advanced"],
+      "default": "beginner"
+    },
+    "credits": {
+      "type": "Number",
+      "required": true,
+      "min": 0,
+      "max": 10
+    },
+    "durationWeeks": {
+      "type": "Number",
+      "required": true,
+      "min": 1
+    },
+    "instructor": {
+      "type": "ObjectId",
+      "ref": "Teacher",
+      "required": true
+    },
+    "students": [
+      {
+        "type": "ObjectId",
+        "ref": "Student"
+      }
+    ],
+    "capacity": {
+      "type": "Number",
+      "required": true,
+      "min": 1
+    },
+    "enrolledCount": {
+      "type": "Number",
+      "default": 0,
+      "min": 0
+    },
+    "schedule": {
+      "startDate": { "type": "Date", "required": true },
+      "endDate": { "type": "Date", "required": true },
+      "daysOfWeek": [
+        { "type": "String", "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] }
+      ],
+      "time": { "type": "String", "maxlength": 50 }
+    },
+    "price": {
+      "type": "Number",
+      "required": true,
+      "min": 0
+    },
+    "currency": {
+      "type": "String",
+      "enum": ["USD", "EUR", "GBP", "GHS"],
+      "default": "USD"
+    },
+    "status": {
+      "type": "String",
+      "enum": ["draft", "published", "archived"],
+      "default": "draft"
+    },
+    "thumbnail": {
+      "type": "String",
+      "default": null
+    },
+    "isActive": {
+      "type": "Boolean",
+      "default": true
+    },
+    "createdAt": {
+      "type": "Date",
+      "default": "Date.now"
+    },
+    "updatedAt": {
+      "type": "Date",
+      "default": "Date.now"
+    }
+  }
+}
