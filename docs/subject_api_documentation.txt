@@ -1,0 +1,246 @@
+Entity: Subject
+Base URL: http://localhost:3000
+
+Endpoints:
+
+1. Create Subject
+   - Method: POST
+   - Path: /api/subjects
+   - Purpose: Create a new subject in the system.
+   - Request Body:
+     - name (String, Required): Name of the subject (max 100 chars).
+     - code (String, Required): Unique subject code (uppercase, max 20 chars).
+     - description (String, Optional): Description of the subject (max 1000 chars).
+     - department (String, Required): Department name (max 100 chars).
+     - level (String, Required): Educational level. Enum: ["primary", "junior_secondary", "senior_secondary", "undergraduate", "postgraduate"].
+     - creditHours (Number, Required): Credit hours (0-10).
+     - teachers (Array, Optional): List of Teacher ObjectIds.
+     - courses (Array, Optional): List of Course ObjectIds.
+     - status (String, Optional): Subject status. Enum: ["active", "inactive", "archived"]. Default: "active".
+     - isElective (Boolean, Optional): Is elective subject. Default: false.
+     - prerequisites (Array, Optional): List of Subject ObjectIds (prerequisites).
+   - Example Payload:
+     {
+       "name": "Mathematics I",
+       "code": "MATH101",
+       "description": "Introduction to Algebra and Geometry",
+       "department": "Mathematics",
+       "level": "undergraduate",
+       "creditHours": 3,
+       "isElective": false
+     }
+   - Status Codes:
+     - 201 Created: Subject created successfully.
+     - 400 Bad Request: Validation error.
+
+2. Get All Subjects
+   - Method: GET
+   - Path: /api/subjects
+   - Purpose: Retrieve all subjects. Populates:
+     - teachers (firstName, lastName, email)
+     - courses (title, code)
+     - prerequisites (name, code)
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: List returned successfully.
+     - 500 Internal Server Error.
+
+3. Get Subject by ID
+   - Method: GET
+   - Path: /api/subjects/:id
+   - Purpose: Retrieve a specific subject. Populates related fields.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Subject found.
+     - 404 Not Found.
+     - 500 Internal Server Error.
+
+4. Update Subject
+   - Method: PUT
+   - Path: /api/subjects/:id
+   - Purpose: Update subject details.
+   - Request Body: (Any defined field)
+   - Example Payload:
+     {
+       "name": "Advanced Mathematics",
+       "creditHours": 4
+     }
+   - Status Codes:
+     - 200 OK: Updated successfully.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+5. Delete Subject
+   - Method: DELETE
+   - Path: /api/subjects/:id
+   - Purpose: Remove a subject from the system.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Deleted successfully.
+     - 404 Not Found.
+     - 500 Internal Server Error.
+
+6. Update Subject Status
+   - Method: PATCH
+   - Path: /api/subjects/:id/status
+   - Purpose: Change the status of a subject.
+   - Request Body:
+     - status (String, Required): Enum ["active", "inactive", "archived"]
+   - Example Payload:
+     {
+       "status": "inactive"
+     }
+   - Status Codes:
+     - 200 OK: Status updated.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+7. Add Teacher to Subject
+   - Method: POST
+   - Path: /api/subjects/:id/teachers
+   - Purpose: Assign a teacher to a subject.
+   - Request Body:
+     - teacherId (ObjectId, Required)
+   - Example Payload:
+     {
+       "teacherId": "60d5ecb8b487343510e8f25d"
+     }
+   - Status Codes:
+     - 200 OK: Teacher added.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+8. Remove Teacher from Subject
+   - Method: DELETE
+   - Path: /api/subjects/:id/teachers/:teacherId
+   - Purpose: Remove a teacher from a subject.
+   - Request Body: None
+   - Status Codes:
+     - 200 OK: Teacher removed.
+     - 404 Not Found.
+
+9. Add Course to Subject
+   - Method: POST
+   - Path: /api/subjects/:id/courses
+   - Purpose: Associate a course with a subject.
+   - Request Body:
+     - courseId (ObjectId, Required)
+   - Example Payload:
+     {
+       "courseId": "60d5ecb8b487343510e8f25b"
+     }
+   - Status Codes:
+     - 200 OK: Course added.
+     - 404 Not Found.
+     - 400 Bad Request.
+
+10. Remove Course from Subject
+    - Method: DELETE
+    - Path: /api/subjects/:id/courses/:courseId
+    - Purpose: Remove a course association from a subject.
+    - Request Body: None
+    - Status Codes:
+      - 200 OK: Course removed.
+      - 404 Not Found.
+
+11. Add Prerequisite to Subject
+    - Method: POST
+    - Path: /api/subjects/:id/prerequisites
+    - Purpose: Add a prerequisite subject.
+    - Request Body:
+      - prerequisiteId (ObjectId, Required)
+    - Example Payload:
+      {
+        "prerequisiteId": "60d5ecb8b487343510e8f25a"
+      }
+    - Status Codes:
+      - 200 OK: Prerequisite added.
+      - 404 Not Found.
+      - 400 Bad Request (e.g. self-reference).
+
+12. Remove Prerequisite from Subject
+    - Method: DELETE
+    - Path: /api/subjects/:id/prerequisites/:prerequisiteId
+    - Purpose: Remove a prerequisite subject.
+    - Request Body: None
+    - Status Codes:
+      - 200 OK: Prerequisite removed.
+      - 404 Not Found.
+
+Full Schema Definition:
+{
+  "name": "Subject",
+  "schema": {
+    "name": {
+      "type": "String",
+      "required": true,
+      "trim": true,
+      "maxlength": 100
+    },
+    "code": {
+      "type": "String",
+      "required": true,
+      "unique": true,
+      "trim": true,
+      "uppercase": true,
+      "maxlength": 20
+    },
+    "description": {
+      "type": "String",
+      "trim": true,
+      "maxlength": 1000
+    },
+    "department": {
+      "type": "String",
+      "required": true,
+      "trim": true,
+      "maxlength": 100
+    },
+    "level": {
+      "type": "String",
+      "enum": ["primary", "junior_secondary", "senior_secondary", "undergraduate", "postgraduate"],
+      "required": true
+    },
+    "creditHours": {
+      "type": "Number",
+      "required": true,
+      "min": 0,
+      "max": 10
+    },
+    "teachers": [
+      {
+        "type": "ObjectId",
+        "ref": "Teacher"
+      }
+    ],
+    "courses": [
+      {
+        "type": "ObjectId",
+        "ref": "Course"
+      }
+    ],
+    "status": {
+      "type": "String",
+      "enum": ["active", "inactive", "archived"],
+      "default": "active"
+    },
+    "isElective": {
+      "type": "Boolean",
+      "default": false
+    },
+    "prerequisites": [
+      {
+        "type": "ObjectId",
+        "ref": "Subject"
+      }
+    ],
+    "createdAt": {
+      "type": "Date",
+      "default": "Date.now"
+    },
+    "updatedAt": {
+      "type": "Date",
+      "default": "Date.now"
+    }
+  }
+}
