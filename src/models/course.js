@@ -48,9 +48,17 @@ const courseSchema = new mongoose.Schema({
     ref: 'Teacher',
     required: true
   },
+  assistants: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Teacher'
+  }],
   students: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Student'
+  }],
+  prerequisites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
   }],
   capacity: {
     type: Number,

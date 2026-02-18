@@ -8,7 +8,11 @@ const {
   deleteCourse,
   updateStatus,
   addStudent,
-  removeStudent
+  removeStudent,
+  addAssistant,
+  removeAssistant,
+  addPrerequisite,
+  removePrerequisite
 } = require('../controllers/courseController');
 
 // Standard CRUD routes
@@ -23,5 +27,11 @@ router.patch('/:id/status', updateStatus);
 
 router.post('/:id/students', addStudent);
 router.delete('/:id/students/:studentId', removeStudent);
+
+router.post('/:id/assistants', addAssistant);
+router.delete('/:id/assistants/:teacherId', removeAssistant);
+
+router.post('/:id/prerequisites', addPrerequisite);
+router.delete('/:id/prerequisites/:prerequisiteId', removePrerequisite);
 
 module.exports = router;
